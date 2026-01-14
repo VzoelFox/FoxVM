@@ -1,0 +1,9 @@
+; File ini akan menyimpan daftar indeks yang akan dipanggil oleh tagger.fox
+; setiap Wrapper API akan ditulis ID block nya disini
+
+
+; IO 
+1 ...
+2 ...
+
+; 
