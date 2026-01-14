@@ -1,39 +1,56 @@
+section .data
+    msg db "Halo", 10
+    msg_len equ $ - msg
+    alloc_msg db "Allocated at: "
+    alloc_msg_len equ $ - alloc_msg
+
 section .text
     global main
     extern mem_alloc
+    extern io_print_bytes
+    extern io_print_newline
+    extern io_print_hex
 
 %include "src/runtime/syscalls.inc"
 
 main:
-    ; Allocate 16 bytes
-    mov rdi, 16
-    call mem_alloc
+    ; 1. Print static message "Halo\n"
+    mov rdi, msg
+    mov rsi, msg_len
+    call io_print_bytes
 
+    ; 2. Allocate memory
+    mov rdi, 32
+    call mem_alloc
     test rax, rax
     jz .fail
+    mov r8, rax         ; Save pointer
 
-    ; Save the pointer
-    mov r8, rax
+    ; 3. Print "Allocated at: "
+    mov rdi, alloc_msg
+    mov rsi, alloc_msg_len
+    call io_print_bytes
 
-    ; Write "Halo\n" to allocated memory
-    mov byte [r8], 'H'
-    mov byte [r8+1], 'a'
-    mov byte [r8+2], 'l'
-    mov byte [r8+3], 'o'
-    mov byte [r8+4], 10  ; newline
+    ; 4. Print the address in Hex
+    mov rdi, r8
+    call io_print_hex
+    call io_print_newline
 
-    ; Print it
-    mov rsi, r8         ; Buffer to print (the allocated memory)
-    mov rdx, 5          ; Length
-    mov rdi, STDOUT
-    mov rax, SYS_WRITE
-    syscall
+    ; 5. Use the memory (write something and print it)
+    mov byte [r8], 'T'
+    mov byte [r8+1], 'e'
+    mov byte [r8+2], 's'
+    mov byte [r8+3], 't'
+    mov byte [r8+4], 10
+
+    mov rdi, r8
+    mov rsi, 5
+    call io_print_bytes
 
     ; Return 0
     xor rax, rax
     ret
 
 .fail:
-    ; Return 1
     mov rax, 1
     ret
