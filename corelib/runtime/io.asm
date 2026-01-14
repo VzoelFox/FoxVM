@@ -3,7 +3,7 @@ section .text
     global io_print_newline
     global io_print_hex
 
-%include "core/syscalls.inc"
+%include "syscalls.inc"
 
 ; -----------------------------------------------------------------------------
 ; io_print_bytes
