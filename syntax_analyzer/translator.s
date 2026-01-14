@@ -1,0 +1,9 @@
+fungsi : func
+tutup_fungsi : close_func
+jika1 : if1
+tutup_jika1 : close_if1
+jika2 : if2
+tutup_jika2 : close_if2
+selama : while
+tutup_selama : close_while
+akhir : EOF 
