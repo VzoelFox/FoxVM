@@ -2,7 +2,7 @@ section .text
     global _start
     extern main
 
-%include "core/syscalls.inc"
+%include "syscalls.inc"
 
 _start:
     ; Call the main application logic
