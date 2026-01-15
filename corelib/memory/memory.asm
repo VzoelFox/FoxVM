@@ -4,7 +4,7 @@ section .data
 section .text
     global mem_alloc
 
-%include "core/syscalls.inc"
+%include "syscalls.inc"
 
 ; mem_alloc(size_in_bytes)
 ; Input: RDI = size

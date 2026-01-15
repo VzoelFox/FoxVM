@@ -1,1 +1,322 @@
+; ==============================================================================
+; AI-READABLE HINT & ERROR SYSTEM (SSOT v1.3)
+; ==============================================================================
+; Enhanced hint system untuk AI understanding dan human debugging
 
+ambil "corelib/core/memory_safety.fox"
+
+; ==============================================================================
+; HINT SYSTEM CONSTANTS
+; ==============================================================================
+
+; Hint Categories (for AI classification)
+const HINT_CATEGORY_SYNTAX = 1      ; Syntax-related hints
+const HINT_CATEGORY_SEMANTIC = 2    ; Meaning/logic hints
+const HINT_CATEGORY_PERFORMANCE = 3 ; Optimization hints
+const HINT_CATEGORY_MEMORY = 4      ; Memory safety hints
+const HINT_CATEGORY_TYPE = 5        ; Type system hints
+const HINT_CATEGORY_FLOW = 6        ; Control flow hints
+
+; Hint Severity Levels
+const HINT_SEVERITY_INFO = 1        ; Informational
+const HINT_SEVERITY_WARNING = 2     ; Potential issue
+const HINT_SEVERITY_ERROR = 3       ; Must fix
+const HINT_SEVERITY_CRITICAL = 4    ; System-breaking
+
+; AI-Readable Hint Codes (structured for pattern recognition)
+const HINT_SYNTAX_MISSING_SEMICOLON = 1001
+const HINT_SYNTAX_UNMATCHED_BRACE = 1002
+const HINT_SYNTAX_INVALID_IDENTIFIER = 1003
+const HINT_SYNTAX_UNEXPECTED_TOKEN = 1004
+
+const HINT_SEMANTIC_UNDEFINED_VARIABLE = 2001
+const HINT_SEMANTIC_TYPE_MISMATCH = 2002
+const HINT_SEMANTIC_UNREACHABLE_CODE = 2003
+const HINT_SEMANTIC_UNUSED_VARIABLE = 2004
+
+const HINT_PERFORMANCE_INEFFICIENT_LOOP = 3001
+const HINT_PERFORMANCE_REDUNDANT_ALLOCATION = 3002
+const HINT_PERFORMANCE_DEEP_RECURSION = 3003
+
+const HINT_MEMORY_POTENTIAL_LEAK = 4001
+const HINT_MEMORY_DOUBLE_FREE = 4002
+const HINT_MEMORY_NULL_DEREFERENCE = 4003
+const HINT_MEMORY_BUFFER_OVERFLOW = 4004
+
+const HINT_TYPE_IMPLICIT_CONVERSION = 5001
+const HINT_TYPE_PRECISION_LOSS = 5002
+const HINT_TYPE_UNSAFE_CAST = 5003
+
+const HINT_FLOW_INFINITE_LOOP = 6001
+const HINT_FLOW_MISSING_RETURN = 6002
+const HINT_FLOW_DEAD_CODE = 6003
+
+; ==============================================================================
+; HINT STRUCTURE (AI-OPTIMIZED)
+; ==============================================================================
+
+struktur Hint {
+    code: i64,           ; Structured hint code (e.g., 1001, 2001)
+    category: i64,       ; Category for AI classification
+    severity: i64,       ; Severity level
+    line: i64,          ; Source line number
+    column: i64,        ; Source column number
+    message: ptr,       ; Human-readable message
+    suggestion: ptr,    ; AI-readable fix suggestion
+    context: ptr,       ; Code context for AI understanding
+    related_hints: ptr  ; Array of related hint codes
+}
+
+; Global hint collection
+var g_hint_buffer = 0
+var g_hint_count = 0
+const MAX_HINTS = 1000
+
+; ==============================================================================
+; HINT SYSTEM INITIALIZATION
+; ==============================================================================
+
+fungsi hint_system_init() -> void
+    set_debug_location("ai_hint_system.fox", 70)
+
+    ; Allocate hint buffer
+    g_hint_buffer = mem_alloc(MAX_HINTS * 64)  ; 64 bytes per hint
+    g_hint_count = 0
+
+    __mf_print_asciz("AI-readable hint system initialized\n")
+tutup_fungsi
+
+; ==============================================================================
+; HINT GENERATION (AI-STRUCTURED)
+; ==============================================================================
+
+; Create structured hint for AI consumption
+fungsi create_hint(code: i64, line: i64, column: i64, message: ptr, suggestion: ptr) -> ptr
+    set_debug_location("ai_hint_system.fox", 84)
+
+    jika (g_hint_count >= MAX_HINTS) {
+        kembali 0  ; Buffer full
+    }
+
+    var hint = g_hint_buffer + (g_hint_count * 64)
+
+    ; Determine category and severity from code
+    var category = code / 1000  ; First digit = category
+    var severity = determine_severity(code)
+
+    ; Fill hint structure
+    mem_store(hint, 0, code)
+    mem_store(hint, 8, category)
+    mem_store(hint, 16, severity)
+    mem_store(hint, 24, line)
+    mem_store(hint, 32, column)
+    mem_store(hint, 40, message)
+    mem_store(hint, 48, suggestion)
+    mem_store(hint, 56, 0)  ; context (to be filled)
+
+    g_hint_count = g_hint_count + 1
+
+    kembali hint
+tutup_fungsi
+
+; Determine severity based on hint code
+fungsi determine_severity(code: i64) -> i64
+    ; Critical errors (4xxx)
+    jika (code >= 4000 && code < 5000) {
+        kembali HINT_SEVERITY_CRITICAL
+    }
+
+    ; Syntax errors (1xxx) - usually errors
+    jika (code >= 1000 && code < 2000) {
+        kembali HINT_SEVERITY_ERROR
+    }
+
+    ; Semantic issues (2xxx) - errors or warnings
+    jika (code >= 2000 && code < 3000) {
+        kembali HINT_SEVERITY_WARNING
+    }
+
+    ; Performance hints (3xxx) - info
+    jika (code >= 3000 && code < 4000) {
+        kembali HINT_SEVERITY_INFO
+    }
+
+    kembali HINT_SEVERITY_INFO
+tutup_fungsi
+
+; ==============================================================================
+; AI-READABLE HINT MESSAGES
+; ==============================================================================
+
+; Generate structured hint messages for AI understanding
+fungsi generate_syntax_hint(code: i64, line: i64, column: i64, context: ptr) -> ptr
+    var message = ""
+    var suggestion = ""
+
+    jika (code == HINT_SYNTAX_MISSING_SEMICOLON) {
+        message = "Missing semicolon at end of statement"
+        suggestion = "Add ';' at end of line"
+    } selain jika (code == HINT_SYNTAX_UNMATCHED_BRACE) {
+        message = "Unmatched brace - missing closing '}'"
+        suggestion = "Add matching '}' to close block"
+    } selain jika (code == HINT_SYNTAX_INVALID_IDENTIFIER) {
+        message = "Invalid identifier name"
+        suggestion = "Use valid identifier: [a-zA-Z_][a-zA-Z0-9_]*"
+    } selain {
+        message = "Syntax error detected"
+        suggestion = "Check syntax according to Morph language specification"
+    }
+
+    kembali create_hint(code, line, column, message, suggestion)
+tutup_fungsi
+
+fungsi generate_memory_hint(code: i64, line: i64, column: i64, context: ptr) -> ptr
+    var message = ""
+    var suggestion = ""
+
+    jika (code == HINT_MEMORY_POTENTIAL_LEAK) {
+        message = "Potential memory leak - allocation without corresponding free"
+        suggestion = "Ensure mem_free() is called for every mem_alloc()"
+    } selain jika (code == HINT_MEMORY_DOUBLE_FREE) {
+        message = "Double free detected - memory already deallocated"
+        suggestion = "Check pointer validity before calling mem_free()"
+    } selain jika (code == HINT_MEMORY_NULL_DEREFERENCE) {
+        message = "Null pointer dereference - accessing invalid memory"
+        suggestion = "Check pointer != 0 before dereferencing"
+    } selain {
+        message = "Memory safety violation detected"
+        suggestion = "Review memory management practices"
+    }
+
+    kembali create_hint(code, line, column, message, suggestion)
+tutup_fungsi
+
+; ==============================================================================
+; AI-READABLE HINT OUTPUT
+; ==============================================================================
+
+; Print hint in structured format for AI consumption
+fungsi print_hint_structured(hint: ptr) -> void
+    var code = mem_load(hint, 0)
+    var category = mem_load(hint, 8)
+    var severity = mem_load(hint, 16)
+    var line = mem_load(hint, 24)
+    var column = mem_load(hint, 32)
+    var message = mem_load(hint, 40)
+    var suggestion = mem_load(hint, 48)
+
+    ; Structured output for AI parsing
+    __mf_print_asciz("HINT:")
+    __mf_print_int(code)
+    __mf_print_asciz("|CAT:")
+    __mf_print_int(category)
+    __mf_print_asciz("|SEV:")
+    __mf_print_int(severity)
+    __mf_print_asciz("|LOC:")
+    __mf_print_int(line)
+    __mf_print_asciz(":")
+    __mf_print_int(column)
+    __mf_print_asciz("|MSG:")
+    __mf_print_asciz(message)
+    __mf_print_asciz("|FIX:")
+    __mf_print_asciz(suggestion)
+    __mf_print_asciz("\n")
+tutup_fungsi
+
+; Print hint in human-readable format
+fungsi print_hint_human(hint: ptr) -> void
+    var code = mem_load(hint, 0)
+    var severity = mem_load(hint, 16)
+    var line = mem_load(hint, 24)
+    var column = mem_load(hint, 32)
+    var message = mem_load(hint, 40)
+    var suggestion = mem_load(hint, 48)
+
+    ; Color-coded severity
+    jika (severity == HINT_SEVERITY_CRITICAL) {
+        __mf_print_asciz("\033[91m[CRITICAL]\033[0m ")
+    } selain jika (severity == HINT_SEVERITY_ERROR) {
+        __mf_print_asciz("\033[31m[ERROR]\033[0m ")
+    } selain jika (severity == HINT_SEVERITY_WARNING) {
+        __mf_print_asciz("\033[33m[WARNING]\033[0m ")
+    } selain {
+        __mf_print_asciz("\033[36m[INFO]\033[0m ")
+    }
+
+    __mf_print_asciz("Line ")
+    __mf_print_int(line)
+    __mf_print_asciz(", Column ")
+    __mf_print_int(column)
+    __mf_print_asciz(": ")
+    __mf_print_asciz(message)
+    __mf_print_asciz("\n")
+
+    __mf_print_asciz("  \033[32mSuggestion:\033[0m ")
+    __mf_print_asciz(suggestion)
+    __mf_print_asciz("\n")
+tutup_fungsi
+
+; ==============================================================================
+; HINT ANALYSIS FOR AI
+; ==============================================================================
+
+; Generate hint statistics for AI analysis
+fungsi analyze_hints() -> void
+    __mf_print_asciz("=== HINT ANALYSIS (AI-READABLE) ===\n")
+
+    var syntax_count = 0
+    var semantic_count = 0
+    var memory_count = 0
+    var performance_count = 0
+    var critical_count = 0
+    var error_count = 0
+    var warning_count = 0
+
+    var i = 0
+    selama (i < g_hint_count) {
+        var hint = g_hint_buffer + (i * 64)
+        var category = mem_load(hint, 8)
+        var severity = mem_load(hint, 16)
+
+        ; Count by category
+        jika (category == HINT_CATEGORY_SYNTAX) {
+            syntax_count = syntax_count + 1
+        } selain jika (category == HINT_CATEGORY_SEMANTIC) {
+            semantic_count = semantic_count + 1
+        } selain jika (category == HINT_CATEGORY_MEMORY) {
+            memory_count = memory_count + 1
+        } selain jika (category == HINT_CATEGORY_PERFORMANCE) {
+            performance_count = performance_count + 1
+        }
+
+        ; Count by severity
+        jika (severity == HINT_SEVERITY_CRITICAL) {
+            critical_count = critical_count + 1
+        } selain jika (severity == HINT_SEVERITY_ERROR) {
+            error_count = error_count + 1
+        } selain jika (severity == HINT_SEVERITY_WARNING) {
+            warning_count = warning_count + 1
+        }
+
+        i = i + 1
+    }
+
+    ; Structured output for AI
+    __mf_print_asciz("ANALYSIS|TOTAL:")
+    __mf_print_int(g_hint_count)
+    __mf_print_asciz("|SYNTAX:")
+    __mf_print_int(syntax_count)
+    __mf_print_asciz("|SEMANTIC:")
+    __mf_print_int(semantic_count)
+    __mf_print_asciz("|MEMORY:")
+    __mf_print_int(memory_count)
+    __mf_print_asciz("|PERFORMANCE:")
+    __mf_print_int(performance_count)
+    __mf_print_asciz("|CRITICAL:")
+    __mf_print_int(critical_count)
+    __mf_print_asciz("|ERRORS:")
+    __mf_print_int(error_count)
+    __mf_print_asciz("|WARNINGS:")
+    __mf_print_int(warning_count)
+    __mf_print_asciz("\n")
+tutup_fungsi
