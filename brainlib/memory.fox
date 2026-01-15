@@ -1,0 +1,61 @@
+unit Memory {
+    doc "BrainLib wrapper for CoreLib Memory primitives"
+
+    shard Allocator {
+        fragment alloc(size: int) -> ptr {
+            intent: "Allocate raw memory block using page allocator"
+            impl: asm "call mem_alloc"
+        }
+
+        fragment free(ptr: ptr) -> void {
+            intent: "Free memory block"
+            impl: asm "call mem_free"
+        }
+
+        fragment reset() -> void {
+            intent: "Reset entire allocator"
+            impl: asm "call mem_reset"
+        }
+    }
+
+    shard Arena {
+        fragment create(size: int) -> ptr {
+            intent: "Create a new memory arena"
+            impl: asm "call arena_create"
+        }
+
+        fragment alloc(arena: ptr, size: int) -> ptr {
+            intent: "Allocate memory from arena"
+            impl: asm "call arena_alloc"
+        }
+
+        fragment reset(arena: ptr) -> void {
+            intent: "Reset arena pointers"
+            impl: asm "call arena_reset"
+        }
+    }
+
+    shard Pool {
+        fragment create(obj_size: int, capacity: int) -> ptr {
+            intent: "Create a fixed-size object pool"
+            impl: asm "call pool_create"
+        }
+
+        fragment alloc(pool: ptr) -> ptr {
+            intent: "Allocate object from pool"
+            impl: asm "call pool_alloc"
+        }
+
+        fragment free(pool: ptr, obj_ptr: ptr) -> void {
+            intent: "Return object to pool"
+            impl: asm "call pool_free"
+        }
+    }
+
+    shard Daemon {
+        fragment start() -> int {
+            intent: "Start background cleaner daemon"
+            impl: asm "call daemon_start"
+        }
+    }
+}
