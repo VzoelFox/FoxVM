@@ -1,0 +1,27 @@
+unit Memory {
+    doc "BrainLib wrapper for CoreLib Memory primitives"
+
+    shard Heap {
+        fragment alloc(size: int) -> ptr {
+            intent: "Allocate raw memory block with VZOELFOX header"
+            impl: asm "call mem_alloc"
+        }
+
+        fragment snapshot(size: int) -> ptr {
+            intent: "Allocate snapshot memory block with MORPHSNP header"
+            impl: asm "call mem_snapshot"
+        }
+
+        fragment current() -> ptr {
+            intent: "Get current heap break"
+            impl: asm "call mem_get_current"
+        }
+    }
+
+    shard Daemon {
+        fragment spawn() -> int {
+            intent: "Spawn background cleaner process"
+            impl: asm "call spawn_daemon"
+        }
+    }
+}
